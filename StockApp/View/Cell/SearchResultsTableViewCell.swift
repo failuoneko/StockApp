@@ -11,6 +11,7 @@ class SearchResultsTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     
+    
     // MARK: - Lifecycle
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

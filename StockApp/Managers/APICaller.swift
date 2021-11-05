@@ -14,6 +14,7 @@ final class APICaller {
         static let apiKey = "c60o6niad3ifmvvnnncg"
         static let sandboxApiKey = "sandbox_c60o6niad3ifmvvnnnd0"
         static let baseUrl = "https://finnhub.io/api/v1/"
+        static let oneDay: TimeInterval = 60 * 60 * 24
     }
     
     private init() {}
@@ -28,14 +29,36 @@ final class APICaller {
         
         // 特殊字元或中文字時轉換文字。
         guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-        request(url: url(for: .search, queryParams: ["q": safeQuery]), expecting: SearchUrlRresponse.self, completion: completion)
+        let url = url(for: .search, queryParams: ["q": safeQuery])
+        request(url: url, expecting: SearchUrlRresponse.self, completion: completion)
 //        print("DEBUG: absoluteURL: [\(url.absoluteURL)]")
+    }
+    
+    // fetchNews
+    public func fetchNews(for type:NewsViewController.`Type`, completion: @escaping (Result<[NewsStory], Error>) -> Void) {
+        
+        switch type {
+        case .news:
+            request(url: url(for: .news, queryParams: ["category": "general"]), expecting: [NewsStory].self, completion: completion)
+        case .company(symbol: let symbol):
+            let today = Date()
+            let oneMonthBack = today.addingTimeInterval(-(Constants.oneDay * 7))
+            request(url: url(for: .companyNews, queryParams: ["symbol": symbol,
+                                                              "from":DateFormatter.newsDateFormatter.string(from: oneMonthBack),
+                                                              "to":DateFormatter.newsDateFormatter.string(from: today)]),
+                    expecting: [NewsStory].self, completion: completion)
+        }
+        
+        
+        
     }
 
     // MARK: - Private
     
     private enum Endpoint: String {
         case search
+        case news = "news"
+        case companyNews = "company-news"
     }
     
     // 定義錯誤。
@@ -56,6 +79,7 @@ final class APICaller {
         queryItems.append(.init(name: "token", value: Constants.apiKey))
         
         // 將查詢結果轉換為String
+        // 產生結果範例：[https://finnhub.io/api/v1/company-news?to=2021-11-05&symbol=MSFT&from=2021-10-29&token=c60o6niad3ifmvvnnncg]
         urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
         
         print("DEBUG: urlString: [\(urlString)]")

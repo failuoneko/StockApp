@@ -19,6 +19,12 @@ extension UITableViewCell {
     }
 }
 
+extension UITableViewHeaderFooterView {
+    static var id: String {
+        return "\(Self.self)"
+    }
+}
+
 extension UICollectionViewController {
     static var id: String {
         return "\(Self.self)"

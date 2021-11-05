@@ -7,12 +7,15 @@
 
 import UIKit
 import SnapKit
+import FloatingPanel
+import Kingfisher
 
 class MainListViewController: UIViewController {
     
     // MARK: - Properties
     
     private var searchTextTimer: Timer?
+    private var floatingPanel: FloatingPanelController?
     
     
     // MARK: - Lifecycle
@@ -20,20 +23,23 @@ class MainListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //        debug()
+        //                debug()
         
         view.backgroundColor = .systemBackground
         configureSearchController()
+        configureFloatingPanel()
         configureTitleView()
+        
     }
     
     // MARK: - API
     
     func debug() {
-        APICaller.shared.searchStocks(query: "Apple") { result in
+        APICaller.shared.fetchNews(for: .company(symbol: "MSFT")) { result in
             switch result {
-            case .success(let response):
-                print("DEBUG: response: [\(response.result)]")
+            case .success(let news):
+                //                print("DEBUG: response: [\(response.result)]")
+                print("DEBUG: response count: [\(news.count)]")
             case .failure(let error):
                 print("DEBUG: error: [\(error)]")
             }
@@ -41,6 +47,15 @@ class MainListViewController: UIViewController {
     }
     
     // MARK: - Helpers
+    
+    private func configureFloatingPanel() {
+        let vc = NewsViewController(type: .news)
+        let panel = FloatingPanelController(delegate: self)
+        panel.surfaceView.backgroundColor = .secondarySystemBackground
+        panel.set(contentViewController: vc)
+        panel.addPanel(toParent: self)
+        panel.track(scrollView: vc.tableView)
+    }
     
     private func configureTitleView() {
         let titleView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: navigationController?.navigationBar.frame.size.height ?? 100))
@@ -103,12 +118,6 @@ extension MainListViewController: UISearchResultsUpdating {
                 }
             }
         })
-        
-        
-        // Update results controller
-        
-        //        resultsController.update(with: ["GOOGLE"])
-        //        print(searchText)
     }
 }
 
@@ -126,5 +135,14 @@ extension MainListViewController: SearchResultsViewControllerDelegate {
         present(navVC, animated: true, completion: nil)
         
         print("DEBUG: select: [\(searchResult.displaySymbol)]")
+    }
+}
+
+// MARK: - SearchResultsViewControllerDelegate
+
+extension MainListViewController: FloatingPanelControllerDelegate {
+    func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
+        // 拉動至最上方時隱藏標題。
+        navigationItem.titleView?.isHidden = fpc.state == .full
     }
 }
