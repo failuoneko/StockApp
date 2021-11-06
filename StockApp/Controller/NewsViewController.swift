@@ -39,8 +39,8 @@ class NewsViewController: UIViewController {
         return tableView
     }()
     
-    // MARK: - Lifecycle
-    
+    // MARK: - Init
+
     init(type: Type) {
         self.type = type
         super.init(nibName: nil, bundle: nil)
@@ -49,6 +49,8 @@ class NewsViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -129,9 +129,6 @@ class NewsTableViewCell: UITableViewCell {
         newsImageView.snp.makeConstraints { make in
             make.size.equalTo(contentView.snp.height).multipliedBy(0.9)
         }
-        
-        
-
     }
     
     public func configure(with viewModel: ViewModel) {

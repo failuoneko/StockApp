@@ -7,11 +7,11 @@
 
 import Foundation
 
-final class PersistenceManger{
+final class PersistenceManager {
     
     // MARK: - Properties
     
-    static let shared = PersistenceManger()
+    static let shared = PersistenceManager()
     
     private let userDefaults: UserDefaults = .standard
     
@@ -34,12 +34,32 @@ final class PersistenceManger{
         return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? []
     }
     
-    public func addToMainList() {
-        
+    /// Add list
+    public func addToWatchlist(symbol: String, companyName: String) {
+        var current = watchlist
+        current.append(symbol)
+        userDefaults.set(current, forKey: Constants.watchlistKey)
+        userDefaults.set(companyName, forKey: symbol)
+
+        NotificationCenter.default.post(name: .didAddToWatchlist, object: nil)
     }
     
-    public func removeFromMainList() {
+    /// Remove list
+    public func removeFromWatchlist(symbol: String) {
+        var newList: [String] = []
         
+//        print("DEBUG: deleting: [\(symbol)]")
+
+        // 移除key
+        userDefaults.set(nil, forKey: symbol)
+        
+        // watchlist裡面沒有該公司簡稱，就追加到list裡，然後覆蓋掉舊的key。
+        for item in watchlist where item != symbol {
+//            print("DEBUG: item: [\(item)]")
+            newList.append(item)
+        }
+
+        userDefaults.set(newList, forKey: Constants.watchlistKey)
     }
     
     
@@ -49,6 +69,7 @@ final class PersistenceManger{
         return userDefaults.bool(forKey: Constants.onboardedKey)
     }
     
+    // 預設watchlist
     private func congureDefaults() {
         let map: [String: String] = [
             "AAPL": "Apple Inc",
@@ -56,7 +77,6 @@ final class PersistenceManger{
             "SNAP": "Snap Inc.",
             "GOOG": "Alphabet",
             "AMZN": "Amazon.com, Inc.",
-            "WORK": "Slack Technologies",
             "FB": "Facebook Inc.",
             "NVDA": "Nvidia Inc.",
             "NKE": "Nike",

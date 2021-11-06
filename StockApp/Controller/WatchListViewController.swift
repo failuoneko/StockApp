@@ -10,22 +10,28 @@ import SnapKit
 import FloatingPanel
 import Kingfisher
 
-class MainListViewController: UIViewController {
+class WatchListViewController: UIViewController {
     
     // MARK: - Properties
     
     private var searchTextTimer: Timer?
     private var floatingPanel: FloatingPanelController?
     
+    /// Width to track change label geometry
+    static var maxChangeWidth: CGFloat = 0
+    
     /// Model
     private var watchlistMap: [String: [CandleStick]] = [:]
+    
     /// ViewModels
     private var viewModels: [WatchListTableViewCell.ViewModel] = []
     
+    private var observer: NSObjectProtocol?
     
     let tableView: UITableView = {
         let tableView = UITableView()
-        tableView.backgroundColor = .clear
+        tableView.register(WatchListTableViewCell.self, forCellReuseIdentifier: WatchListTableViewCell.id)
+        //        tableView.backgroundColor = .clear
         return tableView
     }()
     
@@ -36,16 +42,19 @@ class MainListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        debug()
-        
+        //        debug()
         view.backgroundColor = .systemBackground
         configureSearchController()
         configureTableView()
-        configureWatchlistData()
+        fetchWatchlistData()
         configureFloatingPanel()
         configureTitleView()
+        configureObserver()
         
+        configureUI()
     }
+    
+    
     
     // MARK: - API
     
@@ -55,21 +64,38 @@ class MainListViewController: UIViewController {
             switch result {
             case .success(let data):
                 let candleStricks = data.candleSticks
-//                print("DEBUG: response count: [\(candleStricks.count)]")
+            //                print("DEBUG: response count: [\(candleStricks.count)]")
             case .failure(let error):
                 print("DEBUG: error: [\(error)]")
             }
         }
     }
     
+    
+    // MARK: - configureUI
+    
+    private func configureUI() {
+        tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    
     // MARK: - Helpers
     
-    private func configureWatchlistData() {
-        let symbols = PersistenceManger.shared.watchlist
+    private func configureObserver() {
+        observer = NotificationCenter.default.addObserver(forName: .didAddToWatchlist, object: nil, queue: .main, using: { [weak self] _ in
+            self?.viewModels.removeAll()
+            self?.fetchWatchlistData()
+        })
+    }
+    
+    private func fetchWatchlistData() {
+        let symbols = PersistenceManager.shared.watchlist
         
         let group = DispatchGroup()
         
-        for symbol in symbols {
+        for symbol in symbols where watchlistMap[symbol] == nil {
             group.enter()
             
             // 獲取每個公司的資料。
@@ -96,16 +122,23 @@ class MainListViewController: UIViewController {
     
     private func createViewModels() {
         var viewModels: [WatchListTableViewCell.ViewModel] = []
-        for (symbol, candleStricks) in watchlistMap {
-            let changePercentage = getChangePercentage(symbol: symbol, data: candleStricks)
-            viewModels.append(.init(
-                                symbol: symbol,
-                                companyName: UserDefaults.standard.string(forKey: symbol) ?? "Company",
-                                price: getLastClosingPrice(from: candleStricks),
-                                changeColor: changePercentage < 0 ? .systemRed : .systemGreen,
-                                changePercentage: String.percentage(from: changePercentage)))
+        for (symbol, candleSticks) in watchlistMap {
+            let changePercentage = getChangePercentage(symbol: symbol, data: candleSticks)
+            viewModels.append(
+                .init(
+                    symbol: symbol,
+                    companyName: UserDefaults.standard.string(forKey: symbol) ?? "Company",
+                    price: getLastClosingPrice(from: candleSticks),
+                    changeColor: changePercentage < 0 ? .systemRed : .systemGreen,
+                    changePercentage: String.percentage(from: changePercentage),
+                    chartViewModel: .init(
+                        data: candleSticks.reversed().map{ $0.close },
+                        showLegend: false,
+                        showAxis: false)
+                )
+            )
         }
-        print("DEBUG: viewModel: [\(viewModels)]")
+//        print("DEBUG: viewModel: [\(viewModels)]")
         self.viewModels = viewModels
     }
     
@@ -121,8 +154,8 @@ class MainListViewController: UIViewController {
         print("DEBUG: price diff : [\(symbol): \(different)%)]")
         return different
         
-//        print("DEBUG: [Symbol: \(symbol)| Date: \(latestDate)|Current（現在價格）: \(lastClose)| Prior（先前價格）: \(priorClose)]")
-//        return priorClose/lastClose
+        //        print("DEBUG: [Symbol: \(symbol)| Date: \(latestDate)|Current（現在價格）: \(lastClose)| Prior（先前價格）: \(priorClose)]")
+        //        return priorClose/lastClose
     }
     
     private func getLastClosingPrice(from data: [CandleStick]) -> String {
@@ -179,7 +212,7 @@ class MainListViewController: UIViewController {
 // MARK: - UISearchResultsUpdating
 
 // 更新搜尋結果
-extension MainListViewController: UISearchResultsUpdating {
+extension WatchListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchText = searchController.searchBar.text,
               !searchText.trimmingCharacters(in: .whitespaces).isEmpty,
@@ -212,13 +245,13 @@ extension MainListViewController: UISearchResultsUpdating {
 
 // MARK: - SearchResultsViewControllerDelegate
 
-extension MainListViewController: SearchResultsViewControllerDelegate {
+extension WatchListViewController: SearchResultsViewControllerDelegate {
     func SearchResultsViewControllerSelected(searchResult: SearchResult) {
         // 當使用者點選搜尋匡時，開啟鍵盤
         navigationItem.searchController?.searchBar.resignFirstResponder()
         
         // 選擇搜尋框後顯示股票詳細資料。
-        let vc = StockDetailsViewController()
+        let vc = StockDetailsViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description)
         let navVC = UINavigationController(rootViewController: vc)
         vc.title = searchResult.description
         present(navVC, animated: true, completion: nil)
@@ -229,7 +262,7 @@ extension MainListViewController: SearchResultsViewControllerDelegate {
 
 // MARK: - SearchResultsViewControllerDelegate
 
-extension MainListViewController: FloatingPanelControllerDelegate {
+extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
         // 拉動至最上方時隱藏標題。
         navigationItem.titleView?.isHidden = fpc.state == .full
@@ -237,27 +270,69 @@ extension MainListViewController: FloatingPanelControllerDelegate {
 }
 
 // MARK: - UITableViewDataSource
-extension MainListViewController: UITableViewDataSource {
+extension WatchListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return watchlistMap.count
+        return viewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        //        let cell = tableView.dequeueReusableCell(withIdentifier: NewsTableViewCell.id, for: indexPath) as! NewsTableViewCell
-        return UITableViewCell()
+        let cell = tableView.dequeueReusableCell(withIdentifier: WatchListTableViewCell.id, for: indexPath) as! WatchListTableViewCell
+        cell.delegate = self
+        cell.configure(with: viewModels[indexPath.row])
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension WatchListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        // 點擊cell後觀看詳細數據。
+        let viewModel = viewModels[indexPath.row]
+        let vc = StockDetailsViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
+        let navVc = UINavigationController(rootViewController: vc)
+        present(navVc, animated: true, completion: nil)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return WatchListTableViewCell.preferredHeight
+    }
+    
+    // 左滑刪除cell。
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            tableView.beginUpdates()
+
+            // Update persistence
+            PersistenceManager.shared.removeFromWatchlist(symbol: viewModels[indexPath.row].symbol)
+            
+            // Update viewModels
+            viewModels.remove(at: indexPath.row)
+
+            // Delete Row
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+
+            tableView.endUpdates()
+        }
     }
     
 }
 
 // MARK: - UITableViewDelegate
-extension MainListViewController: UITableViewDelegate {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return watchlistMap.count
+
+extension WatchListViewController: WatchListTableViewCellDelegate {
+    /// 通知delegate標簽寬度的變化
+    func didUpdateMaxWidth() {
+        // 優化：僅刷新更改最大寬度的行。
+        tableView.reloadData()
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        // 打開後觀看詳細數據。
-    }
-    
 }

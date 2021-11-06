@@ -9,6 +9,14 @@ import UIKit
 
 class StockChartView: UIView {
     
+    /// Chart View ViewModel
+    struct ViewModel {
+        let data: [Double]
+        let showLegend: Bool
+        let showAxis: Bool
+//        let fillColor: UIColor
+    }
+    
     // MARK: - Properties
     
     // MARK: - Lifecycle
@@ -33,7 +41,12 @@ class StockChartView: UIView {
         
     }
     
+    func configure(with viewModel: ViewModel) {
+        
+    }
+    
     func configureUI() {
+        
     }
     
 }
