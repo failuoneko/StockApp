@@ -87,7 +87,6 @@ class NewsTableViewCell: UITableViewCell {
         headlineLabel.text = nil
         dateLabel.text = nil
         newsImageView.image = nil
-
     }
     
     

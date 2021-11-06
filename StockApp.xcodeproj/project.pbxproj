@@ -30,6 +30,9 @@
 		646A2FD927354519008D21A1 /* NewsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646A2FD827354519008D21A1 /* NewsTableViewCell.swift */; };
 		646A2FDC27358047008D21A1 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 646A2FDB27358047008D21A1 /* Kingfisher */; };
 		646A2FDE27358954008D21A1 /* ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646A2FDD27358954008D21A1 /* ErrorAlert.swift */; };
+		649971C02735B72100750979 /* MarketDataResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 649971BF2735B72100750979 /* MarketDataResponse.swift */; };
+		649971C227365F5500750979 /* WatchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 649971C127365F5500750979 /* WatchListTableViewCell.swift */; };
+		649971C42736647200750979 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 649971C32736647200750979 /* StockChartView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +58,9 @@
 		646A2FD427351573008D21A1 /* NewsStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStory.swift; sourceTree = "<group>"; };
 		646A2FD827354519008D21A1 /* NewsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsTableViewCell.swift; sourceTree = "<group>"; };
 		646A2FDD27358954008D21A1 /* ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorAlert.swift; sourceTree = "<group>"; };
+		649971BF2735B72100750979 /* MarketDataResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketDataResponse.swift; sourceTree = "<group>"; };
+		649971C127365F5500750979 /* WatchListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListTableViewCell.swift; sourceTree = "<group>"; };
+		649971C32736647200750979 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +121,7 @@
 		64498F95273043F500246617 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				649971C32736647200750979 /* StockChartView.swift */,
 				646A2FD1273460EC008D21A1 /* Header */,
 				64498FAA2731A9F200246617 /* Cell */,
 				64498F8B2730438D00246617 /* LaunchScreen.storyboard */,
@@ -127,6 +134,7 @@
 			children = (
 				646A2FCA27327075008D21A1 /* SearchUrlRresponse.swift */,
 				646A2FD427351573008D21A1 /* NewsStory.swift */,
+				649971BF2735B72100750979 /* MarketDataResponse.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -157,6 +165,7 @@
 			children = (
 				64498FAB2731AA1B00246617 /* SearchResultsTableViewCell.swift */,
 				646A2FD827354519008D21A1 /* NewsTableViewCell.swift */,
+				649971C127365F5500750979 /* WatchListTableViewCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -261,6 +270,7 @@
 			files = (
 				64498FAC2731AA1B00246617 /* SearchResultsTableViewCell.swift in Sources */,
 				64498FAE2731AAA100246617 /* ReuseCell.swift in Sources */,
+				649971C02735B72100750979 /* MarketDataResponse.swift in Sources */,
 				64498F9E2730489300246617 /* StockDetailsViewController.swift in Sources */,
 				646A2FDE27358954008D21A1 /* ErrorAlert.swift in Sources */,
 				64498FA227304C6100246617 /* PersistenceManger.swift in Sources */,
@@ -270,10 +280,12 @@
 				646A2FD527351573008D21A1 /* NewsStory.swift in Sources */,
 				646A2FCB27327075008D21A1 /* SearchUrlRresponse.swift in Sources */,
 				64498FA62731942100246617 /* Extensions.swift in Sources */,
+				649971C42736647200750979 /* StockChartView.swift in Sources */,
 				646A2FD32734610D008D21A1 /* NewsHeaderView.swift in Sources */,
 				64498FA427304D5A00246617 /* HapticsManger.swift in Sources */,
 				64498F812730438B00246617 /* AppDelegate.swift in Sources */,
 				646A2FD927354519008D21A1 /* NewsTableViewCell.swift in Sources */,
+				649971C227365F5500750979 /* WatchListTableViewCell.swift in Sources */,
 				64498F832730438B00246617 /* SceneDelegate.swift in Sources */,
 				64498F9C2730479D00246617 /* SearchResultsViewController.swift in Sources */,
 			);

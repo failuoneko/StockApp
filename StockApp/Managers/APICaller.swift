@@ -21,17 +21,15 @@ final class APICaller {
     
     // MARK: - Public
     
-    // get stock info
-    
     // search stocks
-    public func searchStocks(query: String, completion: @escaping (Result<SearchUrlRresponse, Error>) -> Void) {
-//        guard let url = url(for: .search, queryParams: ["q":query]) else { return }
+    public func searchStocks(query: String, completion: @escaping (Result<SearchUrlResponse, Error>) -> Void) {
+        //        guard let url = url(for: .search, queryParams: ["q":query]) else { return }
         
         // 特殊字元或中文字時轉換文字。
         guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
         let url = url(for: .search, queryParams: ["q": safeQuery])
-        request(url: url, expecting: SearchUrlRresponse.self, completion: completion)
-//        print("DEBUG: absoluteURL: [\(url.absoluteURL)]")
+        request(url: url, expecting: SearchUrlResponse.self, completion: completion)
+        //        print("DEBUG: absoluteURL: [\(url.absoluteURL)]")
     }
     
     // fetchNews
@@ -48,22 +46,38 @@ final class APICaller {
                                                               "to":DateFormatter.newsDateFormatter.string(from: today)]),
                     expecting: [NewsStory].self, completion: completion)
         }
-        
-        
-        
     }
+    
+    // get market data
+    public func fetchMarketData(
+        for symbol: String,
+        numberOfDays: TimeInterval = 7,
+        completion: @escaping (Result<MarketDataResponse, Error>) -> Void) {
+        let today = Date().addingTimeInterval(-(Constants.oneDay))
+        let priot = today.addingTimeInterval(-(Constants.oneDay * numberOfDays))
+        request(
+            url: url(
+                for: .marketData,
+                queryParams: ["symbol": symbol,
+                              "resolution": "1",
+                              "from": "\(Int(priot.timeIntervalSince1970))",
+                              "to": "\(Int(today.timeIntervalSince1970))"]),
+                expecting: MarketDataResponse.self, completion: completion)
 
+    }
+    
     // MARK: - Private
     
     private enum Endpoint: String {
         case search
         case news = "news"
         case companyNews = "company-news"
+        case marketData = "stock/candle"
     }
     
     // 定義錯誤。
     private enum APIError: Error {
-        case noDataReturnde
+        case noDataReturned
         case invalidUrl
     }
     
@@ -88,25 +102,27 @@ final class APICaller {
     }
     
     // request 解析URL
-    private func request<T: Codable>(url: URL?, expecting: T.Type, completion:@escaping (Result<T, Error>) -> Void) {
-        
+    private func request<T: Codable>(
+        url: URL?,
+        expecting: T.Type,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) {
         guard let url = url else {
+            // Invalid url
             completion(.failure(APIError.invalidUrl))
             return
         }
-        
+
         let task = URLSession.shared.dataTask(with: url) { data, _, error in
-            
-            if let error = error {
-                completion(.failure(error))
-                print("DEBUG:error = [\(error.localizedDescription)]")
+            guard let data = data, error == nil else {
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.failure(APIError.noDataReturned))
+                }
                 return
-            } else {
-                completion(.failure(APIError.noDataReturnde))
             }
-            
-            guard let data = data else { return }
-            
+
             do {
                 let result = try JSONDecoder().decode(expecting, from: data)
                 completion(.success(result))
@@ -115,7 +131,8 @@ final class APICaller {
                 completion(.failure(error))
             }
         }
+
         task.resume()
     }
-
+    
 }

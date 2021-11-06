@@ -74,7 +74,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         button.frame = CGRect(x: contentView.frame.size.width - button.frame.size.width - 16,
                               y: (contentView.frame.size.height - button.frame.size.height)/2,
                               width: button.frame.size.width + 12,
-                              height: button.height)
+                              height: button.frame.size.height)
         
     }
     
