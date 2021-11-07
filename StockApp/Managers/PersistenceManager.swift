@@ -22,8 +22,6 @@ final class PersistenceManager {
     
     private init() {}
     
-    
-    
     // MARK: - Public
     
     public var watchlist: [String] {
@@ -32,6 +30,11 @@ final class PersistenceManager {
             congureDefaults()
         }
         return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? []
+    }
+    
+    /// 判斷此股票是否已有加進watchlist。
+    public func watchlistContains(symbol: String) -> Bool {
+        return watchlist.contains(symbol)
     }
     
     /// Add list

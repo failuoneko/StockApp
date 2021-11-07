@@ -89,11 +89,6 @@ class NewsTableViewCell: UITableViewCell {
         newsImageView.image = nil
     }
     
-    
-    // MARK: - Selectors
-    
-    
-    
     // MARK: - Helpers
     
     func configureUI() {
@@ -106,15 +101,12 @@ class NewsTableViewCell: UITableViewCell {
         infoStack.distribution = .fillProportionally
         infoStack.spacing = 10
         infoStack.alignment = .fill
-//        infoStack.backgroundColor = .blue
-
         
         let imageAndInfoStack = UIStackView(arrangedSubviews: [infoStack,newsImageView])
         imageAndInfoStack.axis = .horizontal
         imageAndInfoStack.setCustomSpacing(10, after: infoStack)
         imageAndInfoStack.distribution = .fill
         imageAndInfoStack.alignment = .center
-//        imageAndInfoStack.backgroundColor = .brown
         
         addSubview(imageAndInfoStack)
         imageAndInfoStack.snp.makeConstraints { make in

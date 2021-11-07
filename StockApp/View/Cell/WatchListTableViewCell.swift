@@ -22,11 +22,10 @@ class WatchListTableViewCell: UITableViewCell {
     struct ViewModel {
         let symbol: String
         let companyName: String
-        let price: String // 格式化
-        let changeColor: UIColor // 紅或綠色
-        let changePercentage: String // 格式化
+        let price: String
+        let changeColor: UIColor
+        let changePercentage: String
         let chartViewModel: StockChartView.ViewModel
-        
     }
     
     // MARK: - Properties
@@ -67,7 +66,7 @@ class WatchListTableViewCell: UITableViewCell {
     /// mini Chart
     private let miniChartView: StockChartView = {
         let chart = StockChartView()
-//        chart.backgroundColor = .link
+        chart.isUserInteractionEnabled = false
         chart.clipsToBounds = true
         return chart
     }()
@@ -154,17 +153,9 @@ class WatchListTableViewCell: UITableViewCell {
         priceLabel.text = nil
         changeLabel.text = nil
         miniChartView.resetChartView()
-
     }
-    
-    // MARK: - Selectors
-    
-    
     
     // MARK: - Helpers
-    
-    func configureUI() {
-    }
     
     public func configure(with viewModel: ViewModel) {
         symbolLabel.text = viewModel.symbol
@@ -173,5 +164,6 @@ class WatchListTableViewCell: UITableViewCell {
         changeLabel.text = viewModel.changePercentage
         changeLabel.backgroundColor = viewModel.changeColor
         // configure chart
+        miniChartView.configure(with: viewModel.chartViewModel)
     }
 }

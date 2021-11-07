@@ -14,5 +14,13 @@ extension UIViewController {
         alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
+    
+    func showAddToWatchlistAlert(companyName: String) {
+        let alert = UIAlertController(title: "Added to Watchlist",
+                                      message: "Added 『\(companyName)』 to your watchlist",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
 
 }

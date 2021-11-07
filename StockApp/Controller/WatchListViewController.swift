@@ -42,35 +42,16 @@ class WatchListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //        debug()
         view.backgroundColor = .systemBackground
+        
         configureSearchController()
         configureTableView()
         fetchWatchlistData()
         configureFloatingPanel()
         configureTitleView()
         configureObserver()
-        
         configureUI()
     }
-    
-    
-    
-    // MARK: - API
-    
-    func debug() {
-        APICaller.shared.fetchMarketData(for: "AAPL", numberOfDays: 1) { result in
-            //            print("DEBUG: marketdata :[\(result)]")
-            switch result {
-            case .success(let data):
-                let candleStricks = data.candleSticks
-            //                print("DEBUG: response count: [\(candleStricks.count)]")
-            case .failure(let error):
-                print("DEBUG: error: [\(error)]")
-            }
-        }
-    }
-    
     
     // MARK: - configureUI
     
@@ -134,15 +115,16 @@ class WatchListViewController: UIViewController {
                     chartViewModel: .init(
                         data: candleSticks.reversed().map{ $0.close },
                         showLegend: false,
-                        showAxis: false)
+                        showAxis: false,
+                        fillColor: changePercentage < 0 ? .systemRed : .systemGreen)
                 )
             )
         }
-//        print("DEBUG: viewModel: [\(viewModels)]")
-        self.viewModels = viewModels
+        // 排序 watchlist。
+        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
     }
     
-    // 比較上次的收盤價。
+    /// 比較上次的收盤價。
     private func getChangePercentage(symbol: String, data: [CandleStick]) -> Double {
         // 獲取最新一天的收盤價。
         let latestDate = data[0].date
@@ -151,11 +133,8 @@ class WatchListViewController: UIViewController {
         guard let priorClose = data.first(where: { !Calendar.current.isDate($0.date, inSameDayAs: latestDate)})?.close else { return 0 }
         // 與前一次的股票價差。
         let different = 1 - (priorClose/lastClose)
-        print("DEBUG: price diff : [\(symbol): \(different)%)]")
         return different
         
-        //        print("DEBUG: [Symbol: \(symbol)| Date: \(latestDate)|Current（現在價格）: \(lastClose)| Prior（先前價格）: \(priorClose)]")
-        //        return priorClose/lastClose
     }
     
     private func getLastClosingPrice(from data: [CandleStick]) -> String {
@@ -201,9 +180,9 @@ class WatchListViewController: UIViewController {
         let searchController = UISearchController(searchResultsController: resultsVC)
         searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
-        //        searchController.obscuresBackgroundDuringPresentation = false // 是否模糊
-        //        searchController.hidesNavigationBarDuringPresentation = false // 是否隱藏導航欄
-        //        searchController.searchBar.placeholder = "Search for something"
+        searchController.obscuresBackgroundDuringPresentation = false // 是否模糊
+        searchController.hidesNavigationBarDuringPresentation = false // 是否隱藏導航欄
+//        searchController.searchBar.placeholder = "Search for something"
         definesPresentationContext = false // 是否跟隨view一起滑動
     }
     
@@ -251,7 +230,7 @@ extension WatchListViewController: SearchResultsViewControllerDelegate {
         navigationItem.searchController?.searchBar.resignFirstResponder()
         
         // 選擇搜尋框後顯示股票詳細資料。
-        let vc = StockDetailsViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description)
+        let vc = StockDetailViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description)
         let navVC = UINavigationController(rootViewController: vc)
         vc.title = searchResult.description
         present(navVC, animated: true, completion: nil)
@@ -290,7 +269,7 @@ extension WatchListViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         // 點擊cell後觀看詳細數據。
         let viewModel = viewModels[indexPath.row]
-        let vc = StockDetailsViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
+        let vc = StockDetailViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
         let navVc = UINavigationController(rootViewController: vc)
         present(navVc, animated: true, completion: nil)
     }

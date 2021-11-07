@@ -30,7 +30,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         return label
     }()
 
-    private let button: UIButton = {
+    let button: UIButton = {
         let button = UIButton()
         button.backgroundColor = .systemBlue
         button.setTitle("+ Watchlist", for: .normal)
@@ -41,8 +41,8 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         return button
     }()
 
-    // MARK: - Lifecycle
-    
+    // MARK: - Init
+
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .secondarySystemBackground
@@ -66,6 +66,8 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    // MARK: - Lifecycle
     
     override func layoutSubviews() {
         super.layoutSubviews()

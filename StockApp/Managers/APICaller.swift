@@ -23,7 +23,6 @@ final class APICaller {
     
     // search stocks
     public func searchStocks(query: String, completion: @escaping (Result<SearchUrlResponse, Error>) -> Void) {
-        //        guard let url = url(for: .search, queryParams: ["q":query]) else { return }
         
         // 特殊字元或中文字時轉換文字。
         guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
@@ -48,10 +47,10 @@ final class APICaller {
         }
     }
     
-    // get market data
+    /// 獲取股票資料。
     public func fetchMarketData(
         for symbol: String,
-        numberOfDays: TimeInterval = 7,
+        numberOfDays: TimeInterval = TimeInterval(numberOfDays.Days),
         completion: @escaping (Result<MarketDataResponse, Error>) -> Void) {
         let today = Date().addingTimeInterval(-(Constants.oneDay))
         let priot = today.addingTimeInterval(-(Constants.oneDay * numberOfDays))
@@ -63,7 +62,17 @@ final class APICaller {
                               "from": "\(Int(priot.timeIntervalSince1970))",
                               "to": "\(Int(today.timeIntervalSince1970))"]),
                 expecting: MarketDataResponse.self, completion: completion)
-
+    }
+    
+    /// 獲取財務指標。
+    public func financialMetrics(
+        for symbol: String,
+        completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void) {
+        request(
+            url: url(
+                for: .financials,
+                queryParams: ["symbol": symbol, "metric": "all"]),
+            expecting: FinancialMetricsResponse.self, completion: completion)
     }
     
     // MARK: - Private
@@ -73,6 +82,7 @@ final class APICaller {
         case news = "news"
         case companyNews = "company-news"
         case marketData = "stock/candle"
+        case financials = "stock/metric"
     }
     
     // 定義錯誤。
@@ -95,8 +105,7 @@ final class APICaller {
         // 將查詢結果轉換為String
         // 產生結果範例：[https://finnhub.io/api/v1/company-news?to=2021-11-05&symbol=MSFT&from=2021-10-29&token=c60o6niad3ifmvvnnncg]
         urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
-        
-        print("DEBUG: urlString: [\(urlString)]")
+//        print("DEBUG: urlString: [\(urlString)]")
         
         return URL(string: urlString)
     }
@@ -108,7 +117,7 @@ final class APICaller {
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         guard let url = url else {
-            // Invalid url
+            // 網址無效時。
             completion(.failure(APIError.invalidUrl))
             return
         }
@@ -131,7 +140,6 @@ final class APICaller {
                 completion(.failure(error))
             }
         }
-
         task.resume()
     }
     

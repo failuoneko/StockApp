@@ -9,7 +9,6 @@ import UIKit
 import SafariServices
 
 class NewsViewController: UIViewController {
-    
     enum `Type` {
         case news
         case company(symbol: String)
@@ -26,7 +25,7 @@ class NewsViewController: UIViewController {
     
     // MARK: - Properties
     
-    private var newsArray: [NewsStory] = []
+    private var newsStories: [NewsStory] = []
     
     private let type: Type
     
@@ -70,9 +69,9 @@ class NewsViewController: UIViewController {
     private func fetchNews() {
         APICaller.shared.fetchNews(for: .news) { [weak self] result in
             switch result {
-            case .success(let news):
+            case .success(let newsStories):
                 DispatchQueue.main.async {
-                    self?.newsArray = news
+                    self?.newsStories = newsStories
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
@@ -100,12 +99,12 @@ class NewsViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension NewsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return newsArray.count
+        return newsStories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: NewsTableViewCell.id, for: indexPath) as! NewsTableViewCell
-        cell.configure(with: .init(model: newsArray[indexPath.row]))
+        cell.configure(with: .init(model: newsStories[indexPath.row]))
         return cell
     }
     
@@ -132,7 +131,7 @@ extension NewsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         // 點開新聞(news)
-        let news = newsArray[indexPath.row]
+        let news = newsStories[indexPath.row]
         guard let url = URL(string: news.url) else {
             showError(errorMessage: "Unable to open the article.")
             return

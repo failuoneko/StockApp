@@ -8,6 +8,13 @@
 import Foundation
 import UIKit
 
+class numberOfDays {
+
+    /// 股票資料天數。
+    static let Days = 7
+
+}
+
 // MARK: - Notification
 
 extension Notification.Name {
@@ -110,3 +117,4 @@ extension UIView {
         top + height
     }
 }
+
